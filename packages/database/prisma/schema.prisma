@@ -1,0 +1,118 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String?
+  image     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  healthMetrics HealthMetric[]
+  activities    Activity[]
+  insights      HealthInsight[]
+  goals         Goal[]
+
+  // For NextAuth
+  accounts Account[]
+  sessions Session[]
+}
+
+model HealthMetric {
+  id       String     @id @default(uuid())
+  userId   String
+  user     User       @relation(fields: [userId], references: [id])
+  type     MetricType
+  value    Float
+  unit     String
+  recordAt DateTime   @default(now())
+}
+
+enum MetricType {
+  WEIGHT
+  BLOOG_PRESSURE
+  HEART_RATE
+  BLOOG_SUGAR
+  BMI
+  SLEEP_HOURS
+}
+
+model HealthInsight {
+  id        String   @id @default(uuid())
+  User      User     @relation(fields: [userId], references: [id])
+  userId    String
+  title     String
+  content   String
+  createdAt DateTime @default(now())
+}
+
+model Activity {
+  id        String       @id @default(uuid())
+  user      User         @relation(fields: [userId], references: [id])
+  userId    String
+  type      ActivityType
+  duration  Int
+  calories  Int
+  timestamp DateTime     @default(now())
+}
+
+enum ActivityType {
+  WALKING
+  RUNNING
+  CYCLING
+  SWIMMING
+  YOGA
+  WORKOUT
+  SLEEP
+}
+
+model Goal {
+  id          String     @id @default(uuid())
+  User        User       @relation(fields: [userId], references: [id])
+  userId      String
+  metricType  MetricType
+  targetValue Float
+  unit        String
+  deadline    DateTime
+  completed   Boolean    @default(false)
+}
+
+model Account {
+  id                String  @id @default(uuid())
+  User              User    @relation(fields: [userId], references: [id])
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id     String @id @default(uuid())
+  User   User   @relation(fields: [userId], references: [id])
+  userId String
+}
