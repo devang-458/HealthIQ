@@ -2,11 +2,10 @@
   "name": "@repo/database",
   "version": "1.0.0",
   "main": "index.js",
-  "exports": {
-    "./client": "./src/index.ts"
-  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev --skip-generate",
+    "db:deploy": "prisma migrate deploy"
   },
   "keywords": [],
   "author": "",
@@ -17,8 +16,11 @@
     "@prisma/extension-accelerate": "^2.0.2"
   },
   "devDependencies": {
+    "@repo/typescript-config": "*",
     "prisma": "^6.12.0",
-    "typescript": "^5.8.3",
-    "@repo/typescript-config": "*"
+    "typescript": "^5.8.3"
+  },
+  "exports": {
+    ".": "./src/index.ts"
   }
 }
