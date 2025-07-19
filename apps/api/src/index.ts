@@ -10,7 +10,8 @@ import dotenv from 'dotenv';
 import Redis from 'ioredis';
 
 // Load environment variables
-dotenv.config({ path: '../../.env' });
+dotenv.config({ path: './.env'});
+
 
 // Import routes
 import healthRoutes from './routes/health';
@@ -105,6 +106,13 @@ io.on('connection', (socket) => {
     // Clean up Redis connection data
   });
 });
+
+['PORT', 'FRONTEND_URL', 'JWT_SECRET', 'REDIS_HOST', 'REDIS_PORT'].forEach((key) => {
+  if (!process.env[key]) {
+    console.warn(`⚠️ Missing ENV variable: ${key}`);
+  }
+});
+
 
 // Start server
 const PORT = process.env.PORT || 3001;

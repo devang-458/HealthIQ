@@ -18,10 +18,11 @@ export async function POST(req: NextRequest) {
       where: { email },
     });
 
+    
     if (existingUser) {
       return NextResponse.json(
         { error: "User already exists" },
-        { status: 400 }
+        { status: 409 }
       );
     }
 
@@ -45,6 +46,7 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (error) {
+    console.error("Error during user registration:", error);
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: "Invalid input", details: error },

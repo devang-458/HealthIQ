@@ -3,7 +3,9 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",
+     "jsx": "preserve",
+    "typeRoots": ["./types", "./node_modules/@types"]
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "../web/app/api/[...nextauth]", "../web/app/contexts", "../web/app/lib", "../web/app/api/register"],
   "exclude": ["node_modules", "dist"]
 }

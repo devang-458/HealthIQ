@@ -20,7 +20,8 @@ export default function SignUpPage() {
     const name = formData.get("name") as string
 
     try {
-      const response = await fetch("/api/auth/register", {
+      console.log('try')
+      const response = await fetch('/api/auth/register', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, name }),
@@ -28,12 +29,14 @@ export default function SignUpPage() {
 
       const data = await response.json()
 
+
       if (!response.ok) {
         setError(data.error || "Failed to create account")
       } else {
         router.push("/auth/signin?registered=true")
       }
     } catch (error) {
+      console.log("bad" , error)
       setError("An error occurred. Please try again.")
     } finally {
       setLoading(false)
