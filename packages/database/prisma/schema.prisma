@@ -36,7 +36,7 @@ model HealthRecord {
   weight                 Float?
   height                 Float?
   bloodPressureSystolic  Int?
-  bloidPressureDiastolic Int?
+  bloodPressureDiastolic Int?
   heartRate              Int?
   sleepHours             Float?
   createdAt              DateTime @default(now())
@@ -52,7 +52,7 @@ model Activity {
   userId    String
   date      DateTime
   type      String
-  duraion   Int
+  duration  Int
   distance  Float?
   calories  Int?
   createdAt DateTime @default(now())
