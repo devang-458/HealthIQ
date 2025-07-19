@@ -1,10 +1,9 @@
-import { Router } from 'express';
-import { prisma } from '@health-analytics/database';
-import { z } from 'zod';
+import { Router } from "express";
+import { prisma } from "@repo/database";
+import { z } from "zod";
 
 const router = Router();
 
-// Validation schemas
 const healthRecordSchema = z.object({
   date: z.string().datetime(),
   weight: z.number().optional(),
@@ -12,11 +11,11 @@ const healthRecordSchema = z.object({
   bloodPressureSystolic: z.number().int().optional(),
   bloodPressureDiastolic: z.number().int().optional(),
   heartRate: z.number().int().optional(),
-  sleepHours: z.number().optional()
+  sleepHours: z.number().optional(),
 });
 
 // GET /api/health/records
-router.get('/records', async (req, res, next) => {
+router.get("/records", async (req, res, next) => {
   try {
     const { userId } = req.user!;
     const { startDate, endDate, limit = 30 } = req.query;
@@ -24,15 +23,17 @@ router.get('/records', async (req, res, next) => {
     const records = await prisma.healthRecord.findMany({
       where: {
         userId,
-        ...(startDate || endDate ? {
-          date: {
-            ...(startDate && { gte: new Date(startDate as string) }),
-            ...(endDate && { lte: new Date(endDate as string) })
-          }
-        } : {})
+        ...(startDate || endDate
+          ? {
+              date: {
+                ...(startDate && { gte: new Date(startDate as string) }),
+                ...(endDate && { gte: new Date(endDate as string) }),
+              },
+            }
+          : {}),
       },
-      orderBy: { date: 'desc' },
-      take: parseInt(limit as string)
+      orderBy: { date: "desc" },
+      take: parseInt(limit as string),
     });
 
     res.json({ records });
@@ -42,7 +43,7 @@ router.get('/records', async (req, res, next) => {
 });
 
 // POST /api/health/records
-router.post('/records', async (req, res, next) => {
+router.post("/records", async (req, res, next) => {
   try {
     const { userId } = req.user!;
     const validatedData = healthRecordSchema.parse(req.body);
@@ -51,31 +52,31 @@ router.post('/records', async (req, res, next) => {
       data: {
         ...validatedData,
         userId,
-        date: new Date(validatedData.date)
-      }
+        date: new Date(validatedData.date),
+      },
     });
 
-    // Emit real-time update via WebSocket
-    req.io.to(`user:${userId}`).emit('health_record_created', record);
-    req.io.to(`health:${userId}`).emit('health_update', {
-      type: 'record_created',
-      data: record
+    // Emit real-time update via Websocket
+    req.io.to(`user:${userId}`).emit("health_record_created", record);
+    req.io.to(`user:${userId}`).emit("health_update", {
+      type: "record_created",
+      data: record,
     });
 
     // Cache latest record in Redis
     await req.redis.set(
       `health:latest:${userId}`,
       JSON.stringify(record),
-      'EX',
+      "EX",
       3600
     );
 
     res.status(201).json({ record });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ 
-        error: 'Validation error', 
-        details: error.issues
+      return res.status(400).json({
+        error: "Validation error",
+        details: error.issues,
       });
     }
     next(error);
@@ -83,7 +84,8 @@ router.post('/records', async (req, res, next) => {
 });
 
 // GET /api/health/records/:id
-router.get('/records/:id', async (req, res, next) => {
+
+router.get("/records/:id", async (req, res, next) => {
   try {
     const { userId } = req.user!;
     const { id } = req.params;
@@ -91,14 +93,15 @@ router.get('/records/:id', async (req, res, next) => {
     const record = await prisma.healthRecord.findFirst({
       where: {
         id,
-        userId
-      }
+        userId,
+      },
     });
 
     if (!record) {
-      return res.status(404).json({ error: 'Record not found' });
+      return res.status(404).json({
+        error: "Record not found",
+      });
     }
-
     res.json({ record });
   } catch (error) {
     next(error);
@@ -106,7 +109,7 @@ router.get('/records/:id', async (req, res, next) => {
 });
 
 // PUT /api/health/records/:id
-router.put('/records/:id', async (req, res, next) => {
+router.put("/records/:id", async (req, res, next) => {
   try {
     const { userId } = req.user!;
     const { id } = req.params;
@@ -115,28 +118,28 @@ router.put('/records/:id', async (req, res, next) => {
     const record = await prisma.healthRecord.updateMany({
       where: {
         id,
-        userId
+        userId,
       },
-      data: validatedData
+      data: validatedData,
     });
 
     if (record.count === 0) {
-      return res.status(404).json({ error: 'Record not found' });
+      return res.status(404).json({ error: "Record not found" });
     }
 
-    const updatedRecord = await prisma.healthRecord.findUnique({
-      where: { id }
+    const updateRecord = await prisma.healthRecord.findUnique({
+      where: { id },
     });
 
-    // Emit update via WebSocket
-    req.io.to(`user:${userId}`).emit('health_record_updated', updatedRecord);
+    // Emit update via Websocket
+    req.io.to(`user:${userId}`).emit("health_record_updated", updateRecord);
 
-    res.json({ record: updatedRecord });
+    res.json({ record: updateRecord });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ 
-        error: 'Validation error', 
-        details: error.issues
+      return res.status(400).json({
+        error: "Validation error",
+        details: error.issues,
       });
     }
     next(error);
@@ -144,7 +147,7 @@ router.put('/records/:id', async (req, res, next) => {
 });
 
 // DELETE /api/health/records/:id
-router.delete('/records/:id', async (req, res, next) => {
+router.delete("/records/:id", async (req, res, next) => {
   try {
     const { userId } = req.user!;
     const { id } = req.params;
@@ -152,18 +155,20 @@ router.delete('/records/:id', async (req, res, next) => {
     const deleted = await prisma.healthRecord.deleteMany({
       where: {
         id,
-        userId
-      }
+        userId,
+      },
     });
 
     if (deleted.count === 0) {
-      return res.status(404).json({ error: 'Record not found' });
+      return res.status(404).json({
+        error: "Record not found",
+      });
     }
 
-    // Emit deletion via WebSocket
-    req.io.to(`user:${userId}`).emit('health_record_deleted', { id });
+    // Emit deletion via WenSocket
+    req.io.to(`user:${userId}`).emit("health_record_deleted", { id });
 
-    res.json({ message: 'Record deleted successfully' });
+    res.json({ messaage: "Record deleted successfully" });
   } catch (error) {
     next(error);
   }
