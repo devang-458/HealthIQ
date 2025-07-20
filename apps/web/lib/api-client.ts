@@ -3,6 +3,7 @@ import { getSession } from 'next-auth/react'
 
 const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -12,7 +13,7 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(async (config) => {
   const session = await getSession()
   if (session?.user) {
-    config.headers.Authorization = `Bearer ${session.user.id}`
+    config.headers.Authorization = `Bearer ${session.accessToken}`
   }
   return config
 })

@@ -16,6 +16,7 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    "baseUrl": ".",
     "plugins": [
       {
         "name": "next"
@@ -31,8 +32,9 @@
     "**/*.tsx",
     "next-env.d.ts",
     "next.config.js",
-    ".next/types/**/*.ts"
-  ],
+    ".next/types/**/*.ts",
+    "types/**/*.d.ts"
+, "components/dashboard/overview", "components/dashboard/health-metrics.tsx"  ],
   "exclude": [
     "node_modules"
   ]

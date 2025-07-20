@@ -11,6 +11,7 @@ declare module "next-auth" {
       name?: string | null;
       image?: string | null;
     };
+    accessToken: string
   }
 
   interface User {
@@ -25,6 +26,7 @@ declare module "next-auth/jwt" {
   interface JWT extends DefaultJWT {
     id: string;
     email: string;
+    accessToken?: string
     name?: string | null;
     image?: string | null;
   }

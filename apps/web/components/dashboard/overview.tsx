@@ -2,9 +2,9 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { HealthMetrics } from './health-metrics'
-import { ActivitySummary } from '../dashboard/activity-summary'
-// import { PredictionAlerts } from './prediction-alerts'
-import { RecentNotifications } from '../dashboard/recent-notifications'
+import { ActivitySummary } from './activity-summary'
+import { PredictionAlerts } from './prediction-alerts'
+import { RecentNotifications } from './recent-notifications'
 import apiClient from '../../lib/api-client'
 
 export function DashboardOverview() {
@@ -78,7 +78,7 @@ export function DashboardOverview() {
           <HealthMetrics />
         </div>
         <div className="space-y-6">
-          {/* <PredictionAlerts /> */}
+          <PredictionAlerts />
           <RecentNotifications />
         </div>
       </div>

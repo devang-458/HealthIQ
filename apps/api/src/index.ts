@@ -10,13 +10,15 @@ import dotenv from 'dotenv';
 import Redis from 'ioredis';
 
 // Load environment variables
-dotenv.config({ path: './.env'});
-
+dotenv.config({ path: '../../.env' });
 
 // Import routes
 import healthRoutes from './routes/health';
 import activityRoutes from './routes/activity';
 import predictionRoutes from './routes/prediction';
+import aiRoutes from './routes/ai';
+import notificationRoutes from './routes/notification';
+import labResultsRoutes from './routes/lab-results';
 
 // Import middleware
 import { authMiddleware } from './middleware/auth';
@@ -51,8 +53,10 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use('/api/notifications', authMiddleware, notificationRoutes);
+app.use('/api/lab-results', authMiddleware, labResultsRoutes);
 
-// Make io accessible to routes
+// Make io and redis accessible to routes
 app.use((req, res, next) => {
   req.io = io;
   req.redis = redis;
@@ -72,6 +76,7 @@ app.get('/health', (req, res) => {
 app.use('/api/health', authMiddleware, healthRoutes);
 app.use('/api/activities', authMiddleware, activityRoutes);
 app.use('/api/predictions', authMiddleware, predictionRoutes);
+app.use('/api/ai', authMiddleware, aiRoutes);
 
 // Error handling
 app.use(errorHandler);
@@ -106,13 +111,6 @@ io.on('connection', (socket) => {
     // Clean up Redis connection data
   });
 });
-
-['PORT', 'FRONTEND_URL', 'JWT_SECRET', 'REDIS_HOST', 'REDIS_PORT'].forEach((key) => {
-  if (!process.env[key]) {
-    console.warn(`⚠️ Missing ENV variable: ${key}`);
-  }
-});
-
 
 // Start server
 const PORT = process.env.PORT || 3001;

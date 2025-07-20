@@ -17,38 +17,43 @@ const SocketContext = createContext<SocketContextType>({
 export function SocketProvider({ children }: { children: ReactNode }) {
   const [socket, setSocket] = useState<Socket | null>(null)
   const [connected, setConnected] = useState(false)
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
 
   useEffect(() => {
-    if (!session?.user) return
+    if (status !== 'authenticated' || !session?.user || !session.accessToken) return console.log("hi")
 
     const socketInstance = io(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3006', {
       withCredentials: true,
-      transports: ['websocket', 'polling']
+      transports: ['websocket'],
+      auth: {
+        token: session.accessToken, // ✅ Attach JWT to the socket auth
+      },
     })
 
-    socketInstance.on('connect', () => {
-      console.log('Connected to WebSocket')
+    const handleConnect = () => {
+      console.log('✅ Connected to WebSocket')
       setConnected(true)
-      
-      if (session.user) {
-        socketInstance.emit('authenticate', session.user.id)
-      }
-    })
+      socketInstance.emit('authenticate', session.user.id)
+    }
 
-    socketInstance.on('disconnect', () => {
-      console.log('Disconnected from WebSocket')
+    const handleDisconnect = () => {
+      console.log('❌ Disconnected from WebSocket')
       setConnected(false)
-    })
+    }
 
-    socketInstance.on('authenticated', (data) => {
-      console.log('WebSocket authenticated:', data)
+    const handleAuthenticated = (data: any) => {
+      console.log('🔐 WebSocket authenticated:', data)
       socketInstance.emit('subscribe_health_updates', session.user.id)
-    })
+    }
 
-    setSocket(socketInstance)
+    socketInstance.on('connect', handleConnect)
+    socketInstance.on('disconnect', handleDisconnect)
+    socketInstance.on('authenticated', handleAuthenticated)
 
     return () => {
+      socketInstance.off('connect', handleConnect)
+      socketInstance.off('disconnect', handleDisconnect)
+      socketInstance.off('authenticated', handleAuthenticated)
       socketInstance.disconnect()
     }
   }, [session])
