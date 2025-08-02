@@ -34,7 +34,7 @@
     "next.config.js",
     ".next/types/**/*.ts",
     "types/**/*.d.ts"
-, "components/dashboard/overview", "components/dashboard/health-metrics.tsx"  ],
+, "components/dashboard/overview.tsx", "components/dashboard/health-metrics"  ],
   "exclude": [
     "node_modules"
   ]

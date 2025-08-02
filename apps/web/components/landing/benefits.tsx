@@ -51,9 +51,8 @@ export function Benefits() {
               initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className={`flex flex-col lg:flex-row items-center gap-12 ${
-                index % 2 === 1 ? 'lg:flex-row-reverse' : ''
-              }`}
+              className={`flex flex-col lg:flex-row items-center gap-12 ${index % 2 === 1 ? 'lg:flex-row-reverse' : ''
+                }`}
             >
               <div className="flex-1">
                 <h3 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-4">
@@ -80,9 +79,15 @@ export function Benefits() {
               <div className="flex-1">
                 <div className="relative rounded-2xl overflow-hidden shadow-xl">
                   <div className="aspect-video bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center">
-                    <div className="text-center p-8">
-                      <div className="text-6xl mb-4">📊</div>
-                      <p className="text-gray-600">Interactive Dashboard Preview</p>
+                    <div className="relative rounded-2xl overflow-hidden shadow-xl">
+                      <img
+                        src="https://cdn.boldbi.com/wp/pages/dashboards/healthcare/patient-health-monitoring-v1-banner.webp"
+                        alt="Health AI Dashboard Preview"
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute bottom-0 left-0 right-0 bg-black/40 p-4">
+                        <p className="text-white text-sm">Interactive Dashboard Preview</p>
+                      </div>
                     </div>
                   </div>
                 </div>

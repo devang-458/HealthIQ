@@ -19,6 +19,7 @@ import predictionRoutes from './routes/prediction';
 import aiRoutes from './routes/ai';
 import notificationRoutes from './routes/notification';
 import labResultsRoutes from './routes/lab-results';
+import userRoutes from './routes/user';
 
 // Import middleware
 import { authMiddleware } from './middleware/auth';
@@ -53,8 +54,6 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use('/api/notifications', authMiddleware, notificationRoutes);
-app.use('/api/lab-results', authMiddleware, labResultsRoutes);
 
 // Make io and redis accessible to routes
 app.use((req, res, next) => {
@@ -68,7 +67,12 @@ app.get('/health', (req, res) => {
   res.json({ 
     status: 'ok', 
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    services: {
+      database: 'connected',
+      redis: redis.status === 'ready' ? 'connected' : 'disconnected',
+      websocket: 'active'
+    }
   });
 });
 
@@ -77,6 +81,9 @@ app.use('/api/health', authMiddleware, healthRoutes);
 app.use('/api/activities', authMiddleware, activityRoutes);
 app.use('/api/predictions', authMiddleware, predictionRoutes);
 app.use('/api/ai', authMiddleware, aiRoutes);
+app.use('/api/notifications', authMiddleware, notificationRoutes);
+app.use('/api/lab-results', authMiddleware, labResultsRoutes);
+app.use('/api/user', authMiddleware, userRoutes);
 
 // Error handling
 app.use(errorHandler);
@@ -118,6 +125,7 @@ httpServer.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📡 WebSocket server ready`);
   console.log(`🔗 Redis connected to ${process.env.REDIS_HOST || 'localhost'}`);
+  console.log(`🌐 CORS enabled for ${process.env.FRONTEND_URL || 'http://localhost:3000'}`);
 });
 
 // Graceful shutdown
@@ -126,6 +134,16 @@ process.on('SIGTERM', () => {
   httpServer.close(() => {
     console.log('HTTP server closed');
     redis.disconnect();
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT signal received: closing HTTP server');
+  httpServer.close(() => {
+    console.log('HTTP server closed');
+    redis.disconnect();
+    process.exit(0);
   });
 });
 
@@ -134,3 +152,6 @@ async function verifyToken(token: string): Promise<any> {
   const jwt = require('jsonwebtoken');
   return jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
 }
+
+// Export for testing
+export { app, httpServer, io };

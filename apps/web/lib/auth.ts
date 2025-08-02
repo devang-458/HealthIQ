@@ -6,14 +6,12 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET!;
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
-  secret: NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt",
-    maxAge: 60 * 60, // 1 hour
   },
   providers: [
     CredentialsProvider({
@@ -24,54 +22,54 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error("Please enter both email and password");
+          throw new Error("Invalid credentials");
         }
 
-        // Check user from DB (not via fetch)
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
         });
 
         if (!user || !user.password) {
-          throw new Error("Invalid email or user not found");
+          throw new Error("User not found");
         }
 
-        const isValid = await bcrypt.compare(credentials.password, user.password);
+        const isPasswordValid = await bcrypt.compare(
+          credentials.password,
+          user.password
+        );
 
-        if (!isValid) {
+        if (!isPasswordValid) {
           throw new Error("Invalid password");
         }
 
         return {
           id: user.id,
-          name: user.name,
           email: user.email,
+          name: user.name,
         };
       },
     }),
   ],
   callbacks: {
     async jwt({ token, user }) {
-      // Initial sign in
       if (user) {
         token.id = user.id;
         token.email = user.email;
+
         token.accessToken = jwt.sign(
           { id: user.id, email: user.email },
           NEXTAUTH_SECRET,
           { expiresIn: "1h" }
         );
       }
-
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.email = token.email as string;
-        (session as any).accessToken = token.accessToken;
+        session.accessToken = token.accessToken as string;
       }
-
       return session;
     },
   },

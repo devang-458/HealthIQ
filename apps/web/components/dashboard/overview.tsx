@@ -6,6 +6,7 @@ import { ActivitySummary } from './activity-summary'
 import { PredictionAlerts } from './prediction-alerts'
 import { RecentNotifications } from './recent-notifications'
 import apiClient from '../../lib/api-client'
+import { SettingsManager } from './settings-manager'
 
 export function DashboardOverview() {
   // Fetch dashboard summary data

@@ -62,7 +62,7 @@ export function AIHealthCoach() {
   return (
     <div className="bg-white rounded-lg shadow-lg flex flex-col h-[600px]">
       {/* Header */}
-      <div className="px-6 py-4 border-b">
+      <div className="px-6 py-4 border-b ">
         <div className="flex items-center space-x-3">
           <MessageCircle className="h-6 w-6 text-indigo-600" />
           <div>
