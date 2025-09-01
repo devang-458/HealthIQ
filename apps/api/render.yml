@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: health-analytics-api
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: cd ../.. && npm install && npm run build --workspace=@health-analytics/api
+    startCommand: cd apps/api && npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: DATABASE_URL
+        sync: false
+      - key: UPSTASH_REDIS_REST_URL
+        sync: false
+      - key: UPSTASH_REDIS_REST_TOKEN
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        value: https://your-app.vercel.app
